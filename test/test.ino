@@ -1,77 +1,58 @@
-#include <WiFi.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
+// #include <ArduinoBLE.h>
 
-#define WiFi_SSID "Syed Amir Ali"
-#define WiFi_PASSWORD "syedamirali"
+// void setup() {
+//   Serial.begin(9600);
+//   while (!Serial);
 
-const char* INITIAL_API_URL = "https://esp32.syedamirali.com/";
-String apiUrl;
+//   // Initialize BLE
+//   if (!BLE.begin()) {
+//     Serial.println("Failed to initialize BLE");
+//     while (1);
+//   }
+
+//   // Scan for Bluetooth devices
+//   BLEDevice peripheral = BLE.available();
+//   while (!peripheral) {
+//     peripheral = BLE.available();
+//   }
+
+//   // Connect to the Bluetooth amplifier receiver module
+//   if (peripheral.connect()) {
+//     Serial.println("Connected to Bluetooth amplifier receiver");
+//     // Send audio data to the module
+//     // Implement audio streaming logic here
+//   } else {
+//     Serial.println("Failed to connect to Bluetooth amplifier receiver");
+//   }
+// }
+
+// void loop() {
+//   // Your code here
+// }
+
+
+#include <Bluetooth.h>
+ 
+ // Replace "YOUR_ESP32_NAME" with your desired ESP32 name for discoverability
+const char* deviceName = "YOUR_ESP32_NAME"; 
+
+// Replace "XFW-BT" with the actual SERVICE_UUID of your XY-WRBT module if different
+BluetoothServer server = BluetoothServer("XFW-BT"); 
 
 void setup() {
   Serial.begin(115200);
-  delay(1000);
-
-  WiFi.begin(WiFi_SSID, WiFi_PASSWORD);
-
-  Serial.print("Connecting to WiFi ");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-  Serial.println("WIFI Connected on ");
-  Serial.print(WiFi_SSID);
-  sendGetRequest();
+  server.begin();
+  Serial.println("Bluetooth device name set to: " + String(deviceName));
+  Serial.println("Scanning for XY-WRBT Bluetooth module...");
 }
 
 void loop() {
-  if (apiUrl.isEmpty()) {
-    Serial.println("INITIAL_API_REQUEST_SENDED!");
-    sendGetRequest();
-  } else {
-    Serial.print("API_URL => ");
-    Serial.println(apiUrl);
+  BluetoothClient client = server.available();
+  if (client) {
+    Serial.println("XY-WRBT module connected!");
+    // Add your code to interact with the connected device for audio (refer to XY-WRBT documentation)
+    client.stop();
   }
 
   delay(1000);
-}
-
-void sendGetRequest() {
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-
-    http.begin(INITIAL_API_URL);
-    // Send GET request
-    int httpResponseCode = http.GET();
-
-    if (httpResponseCode > 0) {
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
-
-      // Print response body
-      String response = http.getString();
-
-      DynamicJsonDocument doc(1024);
-      DeserializationError error = deserializeJson(doc, response);
-
-      if (error) {
-        Serial.print("Parsing failed: ");
-        Serial.println(error.c_str());
-        return;
-      }
-
-      const char* apiUrlChar = doc["apiUrl"];
-      if (apiUrlChar != nullptr) {
-        apiUrl = String(apiUrlChar);
-      }
-
-      Serial.println("Response: " + response);
-    } else {
-      Serial.print("Error code: ");
-      Serial.println(httpResponseCode);
-    }
-
-    // Free resources
-    http.end();
-  }
 }

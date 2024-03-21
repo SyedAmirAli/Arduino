@@ -1,6 +1,6 @@
 # Home Automation with ESP Rainmaker using ESP32
 
-![ESP32](./esp32-datasheet/esp32_datasheet_en.pdf)
+![ESP32](./esp32-datasheet/esp32_doit_devkit_v1.png)
 
 ## Overview
 

@@ -128,3 +128,57 @@
 //     Blynk.virtualWrite(SWITCH_2_VPIN, STATE_2);
 //   }
 // }
+ 
+    
+
+    // if (waterLevelPer < triggerPer){
+    // }
+    // if (distance < fullTankDistance){
+    // }
+
+    // if (distance > (fullTankDistance + 5) && waterLevelPer > (triggerPer + 5)){
+    // }        
+  // Determine distance from duration
+  // Use 343 metres per second as speed of sound
+  // Divide by 1000 as we want millimeters
+// toggleBuzzer = HIGH;
+// digitalWrite(BuzzerPin, LOW);
+// digitalWrite(GreenLed, LOW);
+// if (toggleBuzzer == HIGH){
+//   digitalWrite(BuzzerPin, HIGH);
+// } 
+// digitalWrite(GreenLed, HIGH);
+// if (toggleBuzzer == HIGH){
+//   digitalWrite(BuzzerPin, HIGH);
+// }      
+// Print result to serial monitor
+// Serial.print("Distance: ");
+// Serial.print(distance);
+// Serial.println(" cm");
+// displayData(waterLevelPer);
+// Blynk.virtualWrite(VPIN_BUTTON_2, (String(distance) + " cm"));
+
+
+/* void measureWaterLevel(){
+  long duration;
+
+  digitalWrite(SONAR_TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(SONAR_TRIG_PIN, HIGH);
+  delayMicroseconds(20);
+  digitalWrite(SONAR_TRIG_PIN, LOW);
+
+  duration = pulseIn(SONAR_ECHO_PIN, HIGH);
+  distance = (duration * 0.343) / 2;
+
+  Blynk.virtualWrite(WATER_LEVEL_VPIN, distance);
+} */
+  // int result = dht.readTemperatureHumidity(temperature, humidity);
+
+  // if(result == 0){
+  //   // Serial Print
+  // } else {
+  //   Serial.println(DHT11::getErrorString(result));
+  // }
+
+

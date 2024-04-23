@@ -1,4 +1,5 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
-    "cSpell.words": ["irrecv"]
+    "cSpell.words": ["irrecv"],
+    "cmake.sourceDirectory": "/htdocs/Arduino/libraries/ArduinoBLE/extras/test"
 }

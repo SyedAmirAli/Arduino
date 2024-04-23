@@ -7,7 +7,10 @@
 #include <WiFi.h>
 #include <DHT11.h>
 #include <IRremote.h>
+#include <ZMPT101B.h>
 #include <BlynkSimpleEsp32.h>
+
+#include "ACS712.h"
 
 // define the GPIO connected with Relays and switches
 #define RELAY_PIN_1 23  //D23
@@ -20,8 +23,8 @@
 #define SONAR_TRIG_PIN 4 // Ultrasonic sensor trigger pin  
 #define SONAR_ECHO_PIN 5 // Ultrasonic sensor echo pin  
 #define DHT_PIN 18 // DHT11 sensor pin  
-#define CURRENT_SENSOR_PIN 33 // ACS-712 sensor pin  
-#define VOLTAGE_SENSOR 32 // ZMPT101B sensor pin 
+#define CURRENT_SENSOR_PIN A5 // 33 // ACS-712 sensor pin  
+#define VOLTAGE_SENSOR_PIN 32 // ZMPT101B sensor pin 
 #define MOTOR_MANUAL_SWITCH_PIN 25 // Motor Relay pin  
 
 #define wifiLed 2
@@ -43,12 +46,15 @@ int wifiFlag = 0;
 #define HUMIDITY_VPIN            V9
 #define MOTOR_MANUAL_SWITCH_VPIN V0
 
+#define ACTUAL_VOLTAGE 220.0f // Change this based on actual voltage
+#define TOLERANCE 1.0f
+#define SENSITIVITY 300.0f
+
 //Define integer to remember the toggle state for relay
 int toggleState_1 = 1;  
 int toggleState_2 = 1;  
 int toggleState_3 = 1; 
 int toggleState_4 = 1; 
-
 
 //Set Water Level Distance in CM
 int 
@@ -57,10 +63,15 @@ fullTankDistance = 30,  //Distance when tank is full
 triggerPer = 10;  // alarm will start when water level drop below triggerPer
 
 // initiate DHT11 sensor & blynk timer
-DHT11 dht(DHT_PIN);
 BlynkTimer timer;
+DHT11 dht(DHT_PIN);
+ZMPT101B voltageSensor(VOLTAGE_SENSOR_PIN, 50.0); // set init sensitivity
+// ACS712  ACS(CURRENT_SENSOR_PIN, 5.0, 1023, 66);
 
-float temperature = 0.00, humidity = 0.00, distance = 0.00, duration = 0.00, waterLevelPer = 0.00;
+float temperature = 0.00, humidity = 0.00, distance = 0.00, duration = 0.00, waterLevelPer = 0.00, voltage = 0.00, current = 0.00;
+String msg = "";
+
+uint32_t start, stop;
 
 void setup(){
   Serial.begin(115200);
@@ -97,12 +108,19 @@ void setup(){
 
   pinMode(SONAR_TRIG_PIN, OUTPUT);
   pinMode(SONAR_ECHO_PIN, INPUT);
+
+  // ACS.autoMidPoint();
+  // ACS.setADC(signal, 5, 1024);
+  voltageSensor.setSensitivity(SENSITIVITY);
+
 }
 
 void loop(){
   manualButton();
   activateDhtSensor();
   measureWaterLevel();
+  measureVoltage();
+  measureCurrent();
 
   if(WiFi.status() == WL_CONNECTED){
     Blynk.run();
@@ -110,6 +128,10 @@ void loop(){
 
   timer.run();
   sp();
+}
+
+uint16_t signal(uint8_t p){
+  return 512 + 400 * sin((micros() % 1000000) * (TWO_PI * 50 / 1e6));
 }
 
 void relayOnOff(int relay){
@@ -222,16 +244,16 @@ BLYNK_WRITE(MOTOR_MANUAL_SWITCH_VPIN){
 
   if(state == 1){
     if(waterLevelPer < 99){
-      Serial.println("Blynk Motor Start...");
+      msg = "Blynk Motor Start...";
       digitalWrite(MOTOR_RELAY_PIN, HIGH);
     }
 
     if(waterLevelPer > 99) {
-      Serial.println("Blynk Motor Stop by Tank Full...");
+      msg = "Blynk Motor Stop by Tank Full...";
       digitalWrite(MOTOR_RELAY_PIN, LOW);
     }
   } else {
-    Serial.println("Blynk Motor Stop...");
+    msg = "Blynk Motor Stop...";
     digitalWrite(MOTOR_RELAY_PIN, LOW);
   }
 }
@@ -291,7 +313,7 @@ void measureWaterLevel(){
   }
 
   if (distance > (fullTankDistance - 10)  && distance < emptyTankDistance ){
-    waterLevelPer = map((int)distance ,emptyTankDistance, fullTankDistance, 0, 100);
+    waterLevelPer = map((float) distance, emptyTankDistance, fullTankDistance, 0, 100);
   }
 
   if(distance >= emptyTankDistance){
@@ -299,28 +321,28 @@ void measureWaterLevel(){
   }
 
   if(waterLevelPer < 10){
-    Serial.println("Manual Water Pump is ON");
+    msg = "Auto Water Pump is ON";
 
     digitalWrite(MOTOR_RELAY_PIN, HIGH);
     Blynk.virtualWrite(MOTOR_MANUAL_SWITCH_VPIN, 1);
   }
 
   if(waterLevelPer > 99){
-    Serial.println("Auto Water Pump is OFF");
+    msg = "Auto Water Pump is OFF";
 
     digitalWrite(MOTOR_RELAY_PIN, LOW);
     Blynk.virtualWrite(MOTOR_MANUAL_SWITCH_VPIN, 0);
   }
 
   if(digitalRead(MOTOR_MANUAL_SWITCH_PIN) == LOW && waterLevelPer < 90){
-    Serial.println("Manual Water Pump is ON");
+    msg = "Manual Water Pump is ON";
     
     digitalWrite(MOTOR_RELAY_PIN, HIGH);
     Blynk.virtualWrite(MOTOR_MANUAL_SWITCH_VPIN, 1);
   } 
   
   if(digitalRead(MOTOR_MANUAL_SWITCH_PIN) == LOW && waterLevelPer > 99) {
-    Serial.println("Tank Already Full.");
+    msg = "Tank Already Full.";
     
     digitalWrite(MOTOR_RELAY_PIN, LOW);
     Blynk.virtualWrite(MOTOR_MANUAL_SWITCH_VPIN, 0);
@@ -329,6 +351,44 @@ void measureWaterLevel(){
   // Delay & actions before repeating measurement
   Blynk.virtualWrite(WATER_LEVEL_VPIN, waterLevelPer);
   delay(100);
+}
+
+void measureVoltage(){
+  float getVoltage = voltageSensor.getRmsVoltage();
+
+  if(getVoltage < 25){
+    voltage = 0;
+  } else if(getVoltage < 60){
+    voltage = getVoltage - 25;
+  } else {
+    voltage = getVoltage;
+  }
+
+  Blynk.virtualWrite(VOLTAGE_RATE_VPIN, voltage);
+  delay(1000);
+}
+
+void measureCurrent(){
+  // delay(100);
+  // start = micros();
+  // int mA = ACS.mA_AC(); Serial.println(mA);
+  
+  // current = ACS.mA_AC_sampling();
+  // stop = micros();
+
+  // Blynk.virtualWrite(CURRENT_RATE_VPIN, current);
+  // delay(5000);
+
+    float average = 0;
+    for(int i = 0; i < 1000; i++) {
+      average = average + (0.0264 * analogRead(CURRENT_SENSOR_PIN) - 13.51) / 1000;
+      delay(1);
+    }
+
+    current = average;
+    Blynk.virtualWrite(CURRENT_RATE_VPIN, current);
+    Serial.println(average);  
+    delay(1000);
 }
 
 void sp(){
@@ -344,13 +404,32 @@ void sp(){
 
   Serial.print("\tWater Level => ");
   Serial.print(waterLevelPer);
-  Serial.println(" %");
+  Serial.print(" %\t");
+
+  Serial.print("Voltage => ");
+  Serial.print(voltage);
+  Serial.print("V\t");
+
+  Serial.print("Current: ");
+  Serial.print(current);
+  // Serial.print(". \tForm factor: ");
+  // Serial.print(ACS.getFormFactor());
+  // Serial.print("  time: ");
+  // Serial.print(stop - start);
+  Serial.print("\t");
+
+  Serial.println(msg);
   
   delay(1000);
 }
 
 
 
+
+
+  // if(voltage < (ACTUAL_VOLTAGE - TOLERANCE) || voltage > (ACTUAL_VOLTAGE + TOLERANCE)){
+  //   Serial.println("Voltage out of tolerance range!");
+  // }
 
 
 

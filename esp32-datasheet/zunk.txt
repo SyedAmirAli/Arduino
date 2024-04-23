@@ -1,0 +1,130 @@
+
+
+// Call All the relay's switch pin controller's function
+// void manageAllSwitchPins(){
+  // if(SWITCH_1 == LOW){
+  //   int state1 = !STATE_1;
+  //   Blynk.virtualWrite(SWITCH_1_VPIN, state1);
+  // }
+
+  // if(SWITCH_2 == LOW){
+  //   int state2 = !STATE_2;
+  //   Blynk.virtualWrite(SWITCH_2_VPIN, state2);
+  // }
+
+  // if(SWITCH_3 == LOW){
+  //   int state3 = !STATE_3;
+  //   Blynk.virtualWrite(SWITCH_3_VPIN, state3);
+  // }
+
+  // if(SWITCH_4 == LOW){
+  //   int state4 = !STATE_4;
+  //   Blynk.virtualWrite(SWITCH_4_VPIN, state4);
+  // }
+// }
+
+/// @brief Call all the relay pins controller function 
+// void manageAllRelayPins(){
+  // digitalWrite(RELAY_1, STATE_1);
+  // digitalWrite(RELAY_2, STATE_2);
+  // digitalWrite(RELAY_3, STATE_3);
+  // digitalWrite(RELAY_4, STATE_4);
+// }
+
+
+  // manageAllSwitchPins();
+  // manageAllRelayPins();
+
+  // Serial.println("");
+  // Serial.println("WiFi connected");
+  // Serial.print("IP address: ");
+  // Serial.println(WiFi.localIP());
+
+  // if(state == 1){
+  //   STATE_1 = HIGH;
+  // }else{
+  //   STATE_1 = LOW;
+  // }
+
+  // if(state == 1){
+  //   STATE_2 = HIGH;
+  // }else{
+  //   STATE_2 = LOW;
+  // }
+
+  // if(state == 1){
+  //   STATE_3 = HIGH;
+  // }else{
+  //   STATE_3 = LOW;
+  // }
+
+  // digitalWrite(RELAY_3, STATE_3);
+  // digitalWrite(RELAY_3, state);
+  // if(state == 1){
+  //   STATE_4 = HIGH;
+  // }else{
+  //   STATE_4 = LOW;
+  // }
+
+// void S1(){
+//   if(digitalRead(SWITCH_1) == LOW){
+//     int state = !STATE_1;
+//     digitalWrite(RELAY_1, state);
+//     Blynk.virtualWrite(SWITCH_1_VPIN, state);
+//   } 
+// }
+
+// void S2(){
+//   if(digitalRead(SWITCH_2) == LOW){
+//     int state = !STATE_2;
+//     digitalWrite(RELAY_2, state);
+//     Blynk.virtualWrite(SWITCH_2_VPIN, state);
+//   } 
+// }
+
+// void S3(){
+//   if(digitalRead(SWITCH_3) == LOW){
+//     int state = !STATE_3;
+//     digitalWrite(RELAY_3, state);
+//     Blynk.virtualWrite(SWITCH_3_VPIN, state);
+//   } 
+// }
+
+// void S4(){
+//   if(digitalRead(SWITCH_4) == LOW){
+//     int state = !STATE_4;
+//     digitalWrite(RELAY_4, state);
+//     Blynk.virtualWrite(SWITCH_4_VPIN, state);
+//   } 
+// }
+
+
+  // pinMode(SWITCH_1, INPUT_PULLUP);
+  // pinMode(SWITCH_2, INPUT_PULLUP);
+  // pinMode(SWITCH_3, INPUT_PULLUP);
+  // pinMode(SWITCH_4, INPUT_PULLUP);
+
+// void sp(){
+//   Serial.println("PULLING UP...");
+// }
+
+  // S1();
+  // S2();
+  // S3();
+  // S4();
+
+  // button2.init();
+  // button2.setEventHandler(buttonEventHandler2);
+
+
+// void buttonEventHandler2(AceButton* button2, uint8_t eventType){
+//   if(eventType == AceButton::kEventPressed){
+//     STATE_2 = !STATE_2;
+
+//     digitalWrite(RELAY_PIN, STATE_2);
+//     // Print the current relay state
+//     Serial.print("Relay state: ");
+//     Serial.println(STATE_2 ? "ON" : "OFF");
+//     Blynk.virtualWrite(SWITCH_2_VPIN, STATE_2);
+//   }
+// }

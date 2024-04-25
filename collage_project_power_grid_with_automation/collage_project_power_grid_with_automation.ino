@@ -10,7 +10,7 @@
 #include <ZMPT101B.h>
 #include <BlynkSimpleEsp32.h>
 
-#include "ACS712.h"
+#include <ACS712.h >
 
 // define the GPIO connected with Relays and switches
 #define RELAY_PIN_1 23  //D23
@@ -66,7 +66,7 @@ triggerPer = 10;  // alarm will start when water level drop below triggerPer
 BlynkTimer timer;
 DHT11 dht(DHT_PIN);
 ZMPT101B voltageSensor(VOLTAGE_SENSOR_PIN, 50.0); // set init sensitivity
-// ACS712  ACS(CURRENT_SENSOR_PIN, 5.0, 1023, 66);
+ACS712 ACS(CURRENT_SENSOR_PIN, 5.0, 1023, 66);
 
 float temperature = 0.00, humidity = 0.00, distance = 0.00, duration = 0.00, waterLevelPer = 0.00, voltage = 0.00, current = 0.00;
 String msg = "";
@@ -109,8 +109,7 @@ void setup(){
   pinMode(SONAR_TRIG_PIN, OUTPUT);
   pinMode(SONAR_ECHO_PIN, INPUT);
 
-  // ACS.autoMidPoint();
-  // ACS.setADC(signal, 5, 1024);
+  ACS.autoMidPoint();
   voltageSensor.setSensitivity(SENSITIVITY);
 
 }
@@ -120,14 +119,18 @@ void loop(){
   activateDhtSensor();
   measureWaterLevel();
   measureVoltage();
-  measureCurrent();
+  serialValueFromArduino();
+  sp();
+
+  // sendDataToArduino();
+  // measureCurrent();
 
   if(WiFi.status() == WL_CONNECTED){
     Blynk.run();
   }
 
   timer.run();
-  sp();
+  // sp();
 }
 
 uint16_t signal(uint8_t p){
@@ -329,6 +332,7 @@ void measureWaterLevel(){
 
   if(waterLevelPer > 99){
     msg = "Auto Water Pump is OFF";
+    waterLevelPer = 100.00;
 
     digitalWrite(MOTOR_RELAY_PIN, LOW);
     Blynk.virtualWrite(MOTOR_MANUAL_SWITCH_VPIN, 0);
@@ -368,77 +372,28 @@ void measureVoltage(){
   delay(1000);
 }
 
-void measureCurrent(){
-  // delay(100);
-  // start = micros();
-  // int mA = ACS.mA_AC(); Serial.println(mA);
-  
-  // current = ACS.mA_AC_sampling();
-  // stop = micros();
-
-  // Blynk.virtualWrite(CURRENT_RATE_VPIN, current);
-  // delay(5000);
-
-    float average = 0;
-    for(int i = 0; i < 1000; i++) {
-      average = average + (0.0264 * analogRead(CURRENT_SENSOR_PIN) - 13.51) / 1000;
-      delay(1);
-    }
-
-    current = average;
-    Blynk.virtualWrite(CURRENT_RATE_VPIN, current);
-    Serial.println(average);  
-    delay(1000);
-}
-
 void sp(){
-  Serial.print("Temperature: ");
-  Serial.print(temperature);
-  Serial.print(" °C\tHumidity: ");
-  Serial.print(humidity);
-  Serial.print(" %");
-
-  Serial.print("\tDistance => ");
-  Serial.print(distance);
-  Serial.print(" cm");
-
-  Serial.print("\tWater Level => ");
-  Serial.print(waterLevelPer);
-  Serial.print(" %\t");
-
-  Serial.print("Voltage => ");
-  Serial.print(voltage);
-  Serial.print("V\t");
-
-  Serial.print("Current: ");
-  Serial.print(current);
-  // Serial.print(". \tForm factor: ");
-  // Serial.print(ACS.getFormFactor());
-  // Serial.print("  time: ");
-  // Serial.print(stop - start);
-  Serial.print("\t");
-
-  Serial.println(msg);
+  String data = String(temperature) + "," + String(humidity) + "," + String(distance) + "," + String(waterLevelPer) + "," + String(voltage) + "," + String(current * 1000) + "," + String(current);
   
-  delay(1000);
+  Serial.println(data);
+  delay(1000); 
 }
 
+void serialValueFromArduino() {
+  if (Serial.available() > 0) {
+    String data = Serial.readStringUntil('\n');
+    if (data.startsWith("CURRENT_MA:")) {
+      int colonIndex = data.indexOf(':');
+      if (colonIndex != -1) {
+        String currentString = data.substring(colonIndex + 1);
+        current = currentString.toFloat(); // Convert substring to float
 
-
-
-
-  // if(voltage < (ACTUAL_VOLTAGE - TOLERANCE) || voltage > (ACTUAL_VOLTAGE + TOLERANCE)){
-  //   Serial.println("Voltage out of tolerance range!");
-  // }
-
-
-
-
-
-
-
-
-
+        float power = voltage * (current / 1000);
+        Blynk.virtualWrite(CURRENT_RATE_VPIN, power);
+      }
+    }
+  }
+}
 
 
 

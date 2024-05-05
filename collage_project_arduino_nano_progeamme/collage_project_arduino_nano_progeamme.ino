@@ -12,8 +12,8 @@
 ACS712 ACS(ACS_PIN, SUPPLY_VOLTAGE, MAX_ADC_VALUE, SENSITIVITY_MV_PER_A);
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // Set the LCD address and dimensions (16 columns, 2 rows)
 
-int temperature = 0, humidity = 0;
-float distance = 0.00, duration = 0.00, waterLevelPer = 0.00, voltage = 0.00, current = 0.00, power = 0.00;
+int humidity = 0;
+float temperature, distance = 0.00, duration = 0.00, waterLevelPer = 0.00, voltage = 0.00, current = 0.00, power = 0.00;
 
 unsigned long previousMillis = 0;  // Variable to store the previous millis value
 int counter = 0;  // Initialize counter
@@ -27,12 +27,14 @@ void setup() {
 }
 
 void loop() {
+  loaderCounter();
+
   measureCurrent();
   readDataFromESP32();
   counterChanger();
   
   runDisplay();
-  delay(100);
+  // delay(100);
 }
 
 void measureCurrent(){
@@ -55,12 +57,12 @@ void counterChanger() {
   unsigned long currentMillis = millis();  // Get the current time
   
   // Check if 10 seconds have elapsed
-  if (currentMillis - previousMillis >= 10000) {
+  if (currentMillis - previousMillis >= 16000) {
     // Increment the counter
     counter++;
 
-    if (counter > 4) {
-      counter = floor(counter % 4);
+    if (counter > 5) {
+      counter = floor(counter % 5);
     } 
     
     previousMillis = currentMillis;
@@ -101,43 +103,45 @@ void readDataFromESP32() {
     float currentMilli = currentMilliStr.toFloat();
     float currentAmpere = currentAmpereStr.toFloat();
 
-    delay(500);  // Delay to display each value for 2 seconds
+    delay(100);  // Delay to display each value for 2 seconds
   }
 }
+
+int loader = 1;
 
 void runDisplay(){
   lcd.clear();
 
   switch (counter) {
-    case 0:
+    case 1:
       lcd.setCursor(0, 0);
       lcd.print("Tempare: ");
       lcd.print(temperature);
-      lcd.print("C");
+      lcd.print("'C");
       break;
 
-    case 1:
+    case 2:
       lcd.setCursor(0, 0);
       lcd.print("Humidity: ");
       lcd.print(humidity);
       lcd.print("%");
       break;
 
-    case 2:
+    case 3:
       lcd.setCursor(0, 0);
       lcd.print("Voltage: ");
       lcd.print(voltage);
       lcd.print("V");
       break;
 
-    case 3:
+    case 4:
       lcd.setCursor(0, 0);
       lcd.print("Current: ");
       lcd.print(current);
-      lcd.print("mA");
+      lcd.print("A");
       break;
       
-    case 4:
+    case 5:
       lcd.setCursor(0, 0);
       lcd.print("Water:  ");
       lcd.print(waterLevelPer);
@@ -148,6 +152,25 @@ void runDisplay(){
       break;
   }
   
-  lcd.setCursor(0, 1);
-  lcd.print("     ______     ");
+  // lcd.setCursor(0, 1);
+  // lcd.print("     ______     ");
 }
+
+void loaderCounter() {
+  loader++;
+  if (loader > 16) {
+    loader = 1;
+  }
+
+  lcd.setCursor(0, 1);
+  for (int i = 0; i <= 16; i++) { // Changed condition from i >= 16 to i < 16
+    if (i < loader) {
+      lcd.print("_");
+    } else {
+      lcd.print(" "); // Print a space if the position is beyond the loader value
+    }
+  }
+  // loader++;
+  // delay(300);
+}
+

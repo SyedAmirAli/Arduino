@@ -6,11 +6,11 @@
 
 #include <WiFi.h>
 #include <DHT11.h>
+#include <ACS712.h>
 #include <IRremote.h>
 #include <ZMPT101B.h>
 #include <BlynkSimpleEsp32.h>
 
-#include <ACS712.h >
 
 // define the GPIO connected with Relays and switches
 #define RELAY_PIN_1 23  //D23
@@ -27,7 +27,7 @@
 #define VOLTAGE_SENSOR_PIN 32 // ZMPT101B sensor pin 
 #define MOTOR_MANUAL_SWITCH_PIN 25 // Motor Relay pin  
 
-#define wifiLed 2
+#define wifiLed 2    
 int wifiFlag = 0;
 
 #define SWITCH_PIN_1 13  //D13

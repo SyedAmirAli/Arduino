@@ -11,7 +11,7 @@ const char* WIFI_SSID = "SYED_AMIR_ALI";
 const char* WIFI_PASSWORD = "syedamirali";
 
 #include <WiFi.h>
-#include <Servo.h>
+#include <ESP32Servo.h>
 #include <BlynkSimpleEsp32.h>
 
 Servo myservo;

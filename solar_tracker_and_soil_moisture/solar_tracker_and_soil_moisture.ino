@@ -12,8 +12,8 @@ const char* WIFI_PASSWORD = "syedamirali";
 
 #include <WiFi.h>
 #include <BlynkSimpleEsp32.h>
-#include <Servo.h> 
-Servo myservo;
+#include <ESP32Servo.h> 
+ESP32Servo myservo;
 
 #define LDR_2 12 // ADC 15
 #define LDR_1 14 // ADC 16 

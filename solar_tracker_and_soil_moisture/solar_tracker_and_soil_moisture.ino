@@ -11,9 +11,11 @@ const char* WIFI_SSID = "SYED_AMIR_ALI";
 const char* WIFI_PASSWORD = "syedamirali";
 
 #include <WiFi.h>
+#include <Servo.h>
 #include <BlynkSimpleEsp32.h>
-#include <ESP32Servo.h> 
-ESP32Servo myservo;
+
+Servo myservo;
+static const int servoPin = 4;
 
 #define LDR_2 12 // ADC 15
 #define LDR_1 14 // ADC 16 
@@ -34,7 +36,7 @@ void setup() {
   Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASSWORD);
 
   // solar tracker
-  myservo.attach(4); 
+  myservo.attach(servoPin); 
   pinMode(LDR_1, INPUT); 
   pinMode(LDR_2, INPUT); 
 
@@ -47,6 +49,9 @@ void loop() {
   readSoilMoisture();
   updateStatus();
   delay(1000);
+
+  // solar tracker
+  solarTracker();
 }
 
 void connectToWiFi() {

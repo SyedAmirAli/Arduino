@@ -15,6 +15,7 @@ int Spoint =  90;
 Servo servo;
 
 void setup() {
+  Serial.begin(115200);
 //Include servo motor PWM pin
   servo.attach(11);
 //Set the starting point of the servo
@@ -25,8 +26,12 @@ void setup() {
 void loop() {
 //Get the LDR sensor value
   int ldr1 = analogRead(LDR1);
+  Serial.print("LDR 1 => ");
+  Serial.println(ldr1);
 //Get the LDR sensor value
   int ldr2 = analogRead(LDR2);
+  Serial.print("LDR 1 => ");
+  Serial.println(ldr2);
 
 //Get the difference of these values
   int value1 = abs(ldr1 - ldr2);
